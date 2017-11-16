@@ -2,7 +2,7 @@ const DAO = require('./../dao/TrocaDAO');
 const MoveisDAO = require('./../dao/MoveisDAO');
 const UsuariosDAO = require('./../dao/UsuariosDAO');
 const { enviarEmailCancelamentoTroca, enviarEmailSolicitacaoTroca } = require('./../services/email');
-const jsonwebtoken = require('jsonwebtoken');
+const ObjectId = require('mongoose').Types.ObjectId;
 
 var Troca = {};
 
@@ -12,6 +12,17 @@ Troca.solicitar = async (req, res) => {
             solicitante: solicitanteId,
             movel: movelId
         } = req.body;
+
+        console.log('aqui', solicitanteId);
+
+        const moveisDoSolicitante = await MoveisDAO.lista({ dono: ObjectId(solicitanteId) })
+
+        if (!moveisDoSolicitante.length) {
+            res.sendStatus(400);
+            return;
+        }
+
+        console.log(moveisDoSolicitante);
     
         const movel = await MoveisDAO.detalhes(movelId)
         
@@ -41,7 +52,7 @@ Troca.solicitar = async (req, res) => {
         res.status(200).json(troca);
 
     } catch (err) {
-        res.status(400).json(err)
+        res.status(500).json(err)
     }
 };
 
